@@ -1,0 +1,447 @@
+<title>SLIX2 Token &amp; Memory Map</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#eef2f7; --panel:#ffffff; --elev:#f4f7fb; --line:#d6e0ec;
+    --ink:#0f2033; --muted:#5b708a;
+    --accent:#1f6fe0; --accent-soft:#e3edfd;
+    --ok:#128a4e; --warn:#9a6100; --danger:#c62f2f; --danger-soft:#fbe0e0;
+    /* zona memori */
+    --z-free:#9fb2c7; --z-free-bg:#e7edf4;
+    --z-cfg:#1f6fe0; --z-cfg-bg:#e3edfd;
+    --z-sig:#b5730a; --z-sig-bg:#fbeecf;
+    --z-cnt:#7a3ea8; --z-cnt-bg:#efe3fa;
+    --z-tok:#128a4e; --z-tok-bg:#d9f2e4;
+    --z-unk:#c62f2f; --z-unk-bg:#fbe0e0;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0b1622; --panel:#132436; --elev:#0f1e2e; --line:#24425f;
+    --ink:#e6eef7; --muted:#8ba6c2;
+    --accent:#3d8bff; --accent-soft:#173154;
+    --ok:#3ddc84; --warn:#ffb020; --danger:#ff6b6b; --danger-soft:#3a1a1a;
+    --z-free:#607a94; --z-free-bg:#17293b;
+    --z-cfg:#3d8bff; --z-cfg-bg:#12294a;
+    --z-sig:#ffb020; --z-sig-bg:#3a2c10;
+    --z-cnt:#c48be6; --z-cnt-bg:#2c1a3a;
+    --z-tok:#3ddc84; --z-tok-bg:#0f3324;
+    --z-unk:#ff6b6b; --z-unk-bg:#3a1a1a;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#0b1622; --panel:#132436; --elev:#0f1e2e; --line:#24425f;
+    --ink:#e6eef7; --muted:#8ba6c2;
+    --accent:#3d8bff; --accent-soft:#173154;
+    --ok:#3ddc84; --warn:#ffb020; --danger:#ff6b6b; --danger-soft:#3a1a1a;
+    --z-free:#607a94; --z-free-bg:#17293b;
+    --z-cfg:#3d8bff; --z-cfg-bg:#12294a;
+    --z-sig:#ffb020; --z-sig-bg:#3a2c10;
+    --z-cnt:#c48be6; --z-cnt-bg:#2c1a3a;
+    --z-tok:#3ddc84; --z-tok-bg:#0f3324;
+    --z-unk:#ff6b6b; --z-unk-bg:#3a1a1a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding-block:22px 60px;padding-inline:16px}
+  header.top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .logo{width:38px;height:38px;border-radius:9px;background:var(--accent);display:grid;place-items:center;flex:none;box-shadow:0 4px 14px -4px var(--accent)}
+  .logo svg{width:22px;height:22px}
+  h1{font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+  .themebtn{margin-left:auto;flex:none;background:var(--elev);border:1px solid var(--line);color:var(--muted);border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:15px}
+  .lead{font-size:13.5px;color:var(--muted);margin:10px 0 18px;border-left:2px solid var(--accent);padding-left:12px}
+  .tabs{display:flex;gap:4px;background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:16px}
+  .tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-family:var(--mono);font-size:12.5px;padding:9px 8px;border-radius:8px;cursor:pointer;letter-spacing:.03em}
+  .tabs button[aria-selected=true]{background:var(--accent);color:#fff;font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:16px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line)}
+  label.f{display:block;margin-bottom:14px}
+  label.f:last-child{margin-bottom:0}
+  .flab{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+  .flab .bytes{font-family:var(--mono);font-weight:400;letter-spacing:.04em}
+  input[type=text],textarea{width:100%;background:var(--elev);border:1px solid var(--line);border-radius:9px;padding:11px 12px;color:var(--ink);font-family:var(--mono);font-size:15px;letter-spacing:.06em}
+  textarea{font-size:12.5px;line-height:1.6;letter-spacing:.02em;resize:vertical;min-height:120px;white-space:pre;overflow-wrap:normal;overflow-x:auto}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  input.bad{border-color:var(--danger)}
+  .err{color:var(--danger);font-size:11.5px;font-family:var(--mono);margin-top:5px}
+  .row{display:flex;gap:12px}
+  .row>label.f{flex:1}
+  .seg{display:inline-flex;background:var(--elev);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;color:var(--muted);font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:6px;cursor:pointer;letter-spacing:.03em}
+  .seg button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
+  .hint{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:7px;letter-spacing:.02em}
+  .hint b{color:var(--ink);font-weight:500}
+  .kv{margin-bottom:16px}
+  .kv .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .hexbox{font-family:var(--mono);font-size:14px;background:var(--elev);border:1px solid var(--line);border-radius:9px;padding:11px 12px;word-break:break-all;letter-spacing:.08em;line-height:1.7}
+  .token .hexbox{font-size:16px;font-weight:500;border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+  .toklabel{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .toklabel .k{margin:0}
+  .badge{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;background:var(--elev);border:1px solid var(--line);color:var(--muted);letter-spacing:.06em}
+  .copybar{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .copybar button,.btn{font-family:var(--mono);font-size:12px;background:var(--elev);border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .copybar button:active,.btn:active{transform:translateY(1px)}
+  .copybar button.done{border-color:var(--ok);color:var(--ok)}
+  table.blocks{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;margin-top:2px}
+  table.blocks td{padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.blocks tr:last-child td{border-bottom:0}
+  table.blocks .bn{color:var(--accent);width:64px}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--line);line-height:1.6}
+  .note code{font-family:var(--mono);background:var(--elev);padding:1px 5px;border-radius:4px;color:var(--ink)}
+  .flow{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--elev);border:1px dashed var(--line);border-radius:9px;padding:12px;line-height:1.9;margin-bottom:16px;overflow-x:auto}
+  .flow b{color:var(--ink);font-weight:500}
+  .warnbox{display:none;background:var(--danger-soft);border:1px solid var(--danger);color:var(--danger);border-radius:9px;padding:11px 12px;font-size:12.5px;font-family:var(--mono);margin-bottom:16px}
+  .warnbox.show{display:block}
+  footer{text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.05em;margin-top:8px}
+  /* memory grid */
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin:4px 0 6px}
+  .cell{aspect-ratio:1;border-radius:6px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;cursor:pointer;position:relative;padding:2px;transition:transform .08s}
+  .cell:hover{transform:scale(1.08);z-index:2}
+  .cell .n{font-weight:700;font-size:11px;line-height:1}
+  .cell .t{font-size:8px;opacity:.7;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+  .cell.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .z-free{background:var(--z-free-bg);border-color:var(--z-free);color:var(--z-free)}
+  .z-cfg{background:var(--z-cfg-bg);border-color:var(--z-cfg);color:var(--z-cfg)}
+  .z-sig{background:var(--z-sig-bg);border-color:var(--z-sig);color:var(--z-sig)}
+  .z-cnt{background:var(--z-cnt-bg);border-color:var(--z-cnt);color:var(--z-cnt)}
+  .z-tok{background:var(--z-tok-bg);border-color:var(--z-tok);color:var(--z-tok)}
+  .z-unk{background:var(--z-unk-bg);border-color:var(--z-unk);color:var(--z-unk)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:12px 0 4px;font-size:11.5px;font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+  .legend i{width:12px;height:12px;border-radius:3px;border:1px solid}
+  .detail{font-family:var(--mono);font-size:12.5px;background:var(--elev);border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-top:10px;min-height:44px;line-height:1.7}
+  .detail b{color:var(--ink)}
+  .suggest{background:var(--z-tok-bg);border:1px solid var(--z-tok);color:var(--z-tok);border-radius:9px;padding:11px 12px;font-family:var(--mono);font-size:12.5px;margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;line-height:1.5}
+  .suggest b{color:var(--ink)}
+  .cmp{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px;margin-top:6px}
+  .cmp th,.cmp td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--line)}
+  .cmp th{color:var(--muted);font-weight:500;font-size:10px}
+  .cmp td.lab{text-align:left;color:var(--muted)}
+  .cmp td.diff{color:var(--warn);font-weight:700;background:var(--z-sig-bg)}
+  .scrollx{overflow-x:auto}
+  details{margin-top:12px;font-size:12.5px}
+  summary{cursor:pointer;color:var(--accent);font-family:var(--mono);font-size:12px}
+  details p{color:var(--muted);line-height:1.6;margin:8px 0}
+  .panehide{display:none}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9a9 9 0 0 1 0 6M8 6.5a13 13 0 0 1 0 11M12 4v16"/><circle cx="17.5" cy="12" r="2.5" fill="#fff" stroke="none"/></svg></span>
+    <div>
+      <h1>SLIX2 Token &amp; Memory Map</h1>
+      <div class="sub">ICODE SLIX2 · aksi 22 / 23 · dump</div>
+    </div>
+    <button class="themebtn" id="theme" title="Ganti tema">◐</button>
+  </header>
+
+  <p class="lead">Dua alat dalam satu: hitung token skema-sendiri (aksi 22/23), dan baca peta memori tag untuk melihat blok mana yang kosong, terkunci, config, atau signature — supaya token ditaruh di blok yang aman. Semua offline.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-map" aria-selected="true">Peta Memori</button>
+    <button role="tab" id="tab-calc" aria-selected="false">Kalkulator Token</button>
+  </div>
+
+  <!-- ===================== PETA MEMORI ===================== -->
+  <section id="pane-map">
+    <div class="card">
+      <div class="eyebrow">Kenapa ada 80 blok?</div>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 6px;line-height:1.65">
+        Memori SLIX2 dibagi <b style="color:var(--ink)">80 blok × 4 byte</b> (blok 0–79). Blok 0–78 = 316 byte data pengguna; <b style="color:var(--ink)">blok 79 adalah counter</b>, bukan data. Chip-nya sendiri tidak menetapkan isi blok 0–78 — vendor produk (mis. tag Anda) yang mengisinya. Tempel dump dari aplikasi (aksi 1 atau aksi 16) di bawah, dan tiap blok akan ditandai otomatis.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Tempel dump tag</div>
+      <textarea id="dump" spellcheck="false" placeholder="Contoh dari editor aplikasi (aksi 16):&#10;00: FFFFFFFF&#10;01: FFFFFFFF&#10;10: 30303532&#10;...&#10;&#10;atau format READ (aksi 1): '00  FF FF FF FF  ....'&#10;atau hex mentah beruntun."></textarea>
+      <div class="copybar" style="margin-top:10px">
+        <button class="btn" id="load-q">Contoh: Quantum</button>
+        <button class="btn" id="load-m">Contoh: M.flex</button>
+        <button class="btn" id="clear">Kosongkan</button>
+      </div>
+      <div class="hint" id="dumpstat">Belum ada dump.</div>
+    </div>
+
+    <div class="card" id="mapcard" hidden>
+      <div class="eyebrow">Peta 80 blok</div>
+      <div class="grid" id="grid"></div>
+      <div class="legend">
+        <span><i style="background:var(--z-free-bg);border-color:var(--z-free)"></i>Kosong (FF/00)</span>
+        <span><i style="background:var(--z-cfg-bg);border-color:var(--z-cfg)"></i>Config/teks</span>
+        <span><i style="background:var(--z-sig-bg);border-color:var(--z-sig)"></i>Signature/biner</span>
+        <span><i style="background:var(--z-cnt-bg);border-color:var(--z-cnt)"></i>Counter (79)</span>
+        <span><i style="background:var(--z-unk-bg);border-color:var(--z-unk)"></i>Gagal baca</span>
+      </div>
+      <div class="detail" id="detail">Ketuk sebuah blok untuk melihat isinya.</div>
+      <div class="suggest" id="suggest" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Config blok 10–21 · 2 tag Anda</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 8px;line-height:1.6">Zona ini terkunci permanen oleh vendor. Kolom yang <b style="color:var(--warn)">disorot</b> berbeda antar tag — kemungkinan pembeda tipe/varian produk.</p>
+      <div class="scrollx">
+        <table class="cmp" id="cmp"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== KALKULATOR ===================== -->
+  <section id="pane-calc" class="panehide">
+    <div class="card">
+      <div class="eyebrow">Masukan</div>
+      <label class="f">
+        <span class="flab">MASTER_KEY <span class="bytes" id="mkinfo">— byte</span></span>
+        <input type="text" id="mk" value="91790801" placeholder="hex, mis. 32 digit (16 byte)" autocomplete="off" spellcheck="false">
+        <div class="err" id="mk-e"></div>
+      </label>
+      <label class="f">
+        <span class="flab">UID tag <span class="bytes">8 byte</span></span>
+        <input type="text" id="uid" value="E0 04 01 08 33 69 1A B6" placeholder="mis. E0 04 01 08 33 69 1A B6" autocomplete="off" spellcheck="false">
+        <div class="err" id="uid-e"></div>
+        <div style="margin-top:9px">
+          <div class="seg" role="group" aria-label="Urutan UID">
+            <button id="ord-disp" aria-pressed="true">Tampilan (E0 04…)</button>
+            <button id="ord-send" aria-pressed="false">Kirim (…E0)</button>
+          </div>
+        </div>
+        <div class="hint">Dipakai untuk hitung (urut kirim): <b id="uidused">—</b></div>
+      </label>
+      <div class="row">
+        <label class="f">
+          <span class="flab">Kode produk <span class="bytes">2 byte</span></span>
+          <input type="text" id="prod" value="F000" placeholder="mis. F000" autocomplete="off" spellcheck="false">
+          <div class="err" id="prod-e"></div>
+        </label>
+        <label class="f">
+          <span class="flab">Counter <span class="bytes">4 byte</span></span>
+          <input type="text" id="cnt" value="00000000" placeholder="mis. 00000000" autocomplete="off" spellcheck="false">
+          <div class="err" id="cnt-e"></div>
+        </label>
+      </div>
+      <label class="f" style="margin-bottom:14px">
+        <span class="flab">Algoritma</span>
+        <div class="seg" role="group" aria-label="Algoritma">
+          <button id="algo-cmac" aria-pressed="true">AES-CMAC · 16B</button>
+          <button id="algo-hmac" aria-pressed="false">HMAC-SHA256 · 32B</button>
+        </div>
+      </label>
+      <label class="f">
+        <span class="flab">Blok awal token <span class="bytes" id="blkinfo">4 blok</span></span>
+        <input type="text" id="blk" value="40" placeholder="0–78, mis. 40" inputmode="numeric" autocomplete="off">
+        <div class="err" id="blk-e"></div>
+        <div class="hint">Pilih blok <b>kosong</b> yang cukup — cek di tab Peta Memori.</div>
+      </label>
+    </div>
+
+    <div class="warnbox" id="warn"></div>
+
+    <div class="card" id="result" hidden>
+      <div class="eyebrow">Hasil</div>
+      <div class="flow" id="flow"></div>
+      <div class="kv">
+        <div class="k">K_tag = HMAC-SHA256(MASTER_KEY, UID) [16 byte pertama]</div>
+        <div class="hexbox" id="ktag"></div>
+      </div>
+      <div class="kv">
+        <div class="k">Input MAC = UID(8) ‖ kode(2) ‖ counter(4) — 14 byte</div>
+        <div class="hexbox" id="input"></div>
+      </div>
+      <div class="kv token">
+        <div class="toklabel"><span class="k">Token</span> <span class="badge" id="tokbadge"></span></div>
+        <div class="hexbox" id="token"></div>
+        <div class="copybar">
+          <button id="cp-sp">Salin (spasi)</button>
+          <button id="cp-raw">Salin (tanpa spasi)</button>
+        </div>
+      </div>
+      <div class="kv" style="margin-bottom:0">
+        <div class="k">Penulisan ke tag (4 byte per blok)</div>
+        <table class="blocks"><tbody id="blocks"></tbody></table>
+      </div>
+      <div class="note">Verifikasi (aksi 22) menghitung ulang token ini lalu membandingkannya waktu-konstan dengan yang tersimpan di tag. Provisioning (aksi 23) menulis token ini mulai blok di atas. Keamanan skema ada pada <code>MASTER_KEY</code>, bukan algoritmanya.</div>
+    </div>
+  </section>
+
+  <footer>Offline · tidak ada data yang dikirim keluar · v2</footer>
+</div>
+
+<script>
+/* ================= Verified pure-JS crypto (RFC 4493 vectors pass; matches app) ================= */
+function sha256(msg){const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];let h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];const l=msg.length,bl=l*8,withOne=l+1,k=(56-(withOne%64)+64)%64,total=withOne+k+8,buf=new Uint8Array(total);buf.set(msg,0);buf[l]=0x80;const dv=new DataView(buf.buffer);dv.setUint32(total-8,Math.floor(bl/0x100000000));dv.setUint32(total-4,bl>>>0);const rr=(x,n)=>(x>>>n)|(x<<(32-n));for(let i=0;i<total;i+=64){const w=new Uint32Array(64);for(let t=0;t<16;t++)w[t]=dv.getUint32(i+t*4);for(let t=16;t<64;t++){const s0=rr(w[t-15],7)^rr(w[t-15],18)^(w[t-15]>>>3),s1=rr(w[t-2],17)^rr(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}let[a,b,c,d,e,f,g,hh]=h;for(let t=0;t<64;t++){const S1=rr(e,6)^rr(e,11)^rr(e,25),ch=(e&f)^(~e&g),t1=(hh+S1+ch+K[t]+w[t])>>>0,S0=rr(a,2)^rr(a,13)^rr(a,22),mj=(a&b)^(a&c)^(b&c),t2=(S0+mj)>>>0;hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}h=[(h[0]+a)>>>0,(h[1]+b)>>>0,(h[2]+c)>>>0,(h[3]+d)>>>0,(h[4]+e)>>>0,(h[5]+f)>>>0,(h[6]+g)>>>0,(h[7]+hh)>>>0];}const out=new Uint8Array(32),o=new DataView(out.buffer);for(let i=0;i<8;i++)o.setUint32(i*4,h[i]);return out;}
+function concat(a,b){const o=new Uint8Array(a.length+b.length);o.set(a,0);o.set(b,a.length);return o;}
+function hmacSha256(key,data){const B=64;let k=key;if(k.length>B)k=sha256(k);const kp=new Uint8Array(B);kp.set(k);const ip=new Uint8Array(B),op=new Uint8Array(B);for(let i=0;i<B;i++){ip[i]=kp[i]^0x36;op[i]=kp[i]^0x5c;}return sha256(concat(op,sha256(concat(ip,data))));}
+const SB=(()=>{const gmul=(a,b)=>{let r=0;for(let i=0;i<8;i++){if(b&1)r^=a;const hi=a&0x80;a=(a<<1)&0xff;if(hi)a^=0x1b;b>>=1;}return r;};const exp=new Uint8Array(512),log=new Uint8Array(256);let xx=1;for(let i=0;i<255;i++){exp[i]=xx;log[xx]=i;xx=gmul(xx,3);}for(let i=255;i<512;i++)exp[i]=exp[i-255];const inv=new Uint8Array(256);inv[0]=0;for(let i=1;i<256;i++)inv[i]=exp[255-log[i]];const box=new Uint8Array(256);for(let i=0;i<256;i++){let y=inv[i],z=y;for(let c=0;c<4;c++){z=((z<<1)|(z>>7))&0xff;y^=z;}box[i]=y^0x63;}return box;})();
+function keyExp(key){const Nr=10;const w=new Uint8Array(16*(Nr+1));w.set(key);const rc=[0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];for(let i=4;i<4*(Nr+1);i++){let t=[w[(i-1)*4],w[(i-1)*4+1],w[(i-1)*4+2],w[(i-1)*4+3]];if(i%4===0){t=[t[1],t[2],t[3],t[0]].map(b=>SB[b]);t[0]^=rc[i/4-1];}for(let j=0;j<4;j++)w[i*4+j]=w[(i-4)*4+j]^t[j];}return w;}
+function aesEnc(key,inp){const w=keyExp(key);let s=Uint8Array.from(inp.slice(0,16));const xt=a=>((a<<1)^((a&0x80)?0x11b:0))&0xff;const addRK=r=>{for(let i=0;i<16;i++)s[i]^=w[r*16+i];};const subB=()=>{for(let i=0;i<16;i++)s[i]=SB[s[i]];};const shift=()=>{const t=s.slice();s[1]=t[5];s[5]=t[9];s[9]=t[13];s[13]=t[1];s[2]=t[10];s[6]=t[14];s[10]=t[2];s[14]=t[6];s[3]=t[15];s[7]=t[3];s[11]=t[7];s[15]=t[11];};const mix=()=>{for(let c=0;c<4;c++){const i=c*4,a0=s[i],a1=s[i+1],a2=s[i+2],a3=s[i+3];s[i]=xt(a0)^(xt(a1)^a1)^a2^a3;s[i+1]=a0^xt(a1)^(xt(a2)^a2)^a3;s[i+2]=a0^a1^xt(a2)^(xt(a3)^a3);s[i+3]=(xt(a0)^a0)^a1^a2^xt(a3);}};addRK(0);for(let r=1;r<10;r++){subB();shift();mix();addRK(r);}subB();shift();addRK(10);return s;}
+function aesCmac(key,msg){const enc=b=>aesEnc(key,b);const dbl=b=>{const o=new Uint8Array(16);let ov=0;for(let i=15;i>=0;i--){const v=b[i]<<1;o[i]=(v&0xff)|ov;ov=(v>>8)&1;}if(b[0]&0x80)o[15]^=0x87;return o;};const K1=dbl(enc(new Uint8Array(16))),K2=dbl(K1);const n=msg.length===0?1:Math.ceil(msg.length/16),complete=msg.length>0&&msg.length%16===0;const xor=(a,b)=>{const o=new Uint8Array(16);for(let i=0;i<16;i++)o[i]=a[i]^b[i];return o;};let last;if(complete)last=xor(msg.slice((n-1)*16,(n-1)*16+16),K1);else{const rem=msg.slice((n-1)*16),pad=new Uint8Array(16);pad.set(rem);pad[rem.length]=0x80;last=xor(pad,K2);}let x=new Uint8Array(16);for(let i=0;i<n-1;i++)x=enc(xor(x,msg.slice(i*16,i*16+16)));return enc(xor(x,last));}
+
+/* ================= helpers ================= */
+const $=id=>document.getElementById(id);
+const sp=b=>[...b].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+const raw=b=>[...b].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join('');
+function parseHex(t){const c=t.replace(/0x/gi,'').replace(/[\s:,\-]/g,'');if(c==='')return new Uint8Array(0);if(!/^[0-9a-fA-F]*$/.test(c))throw'Ada karakter bukan hex';if(c.length%2)throw'Jumlah digit hex harus genap ('+c.length+' digit)';return Uint8Array.from(c.match(/../g).map(h=>parseInt(h,16)));}
+function copy(btn,text){const done=()=>{const t=btn.textContent;btn.textContent='✓ Tersalin';btn.classList.add('done');setTimeout(()=>{btn.textContent=t;btn.classList.remove('done');},1400);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fb(text,done));}else fb(text,done);}
+function fb(text,done){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){}document.body.removeChild(ta);}
+
+/* ================= tabs ================= */
+function showTab(t){const map=t==='map';$('tab-map').setAttribute('aria-selected',map);$('tab-calc').setAttribute('aria-selected',!map);$('pane-map').classList.toggle('panehide',!map);$('pane-calc').classList.toggle('panehide',map);}
+$('tab-map').onclick=()=>showTab('map');
+$('tab-calc').onclick=()=>showTab('calc');
+$('theme').onclick=()=>{const r=document.documentElement,cur=r.getAttribute('data-theme');const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.setAttribute('data-theme',dark?'light':'dark');};
+
+/* ================= dump parser + memory map ================= */
+// block model: array[80] of {bytes:Uint8Array(4)|null}
+function parseDump(text){
+  const blocks=new Array(80).fill(null);
+  const lines=text.split(/\r?\n/);
+  let seq=0, labelled=false, anyLine=false;
+  for(const line of lines){
+    const s=line.trim(); if(!s)continue; anyLine=true;
+    // failed read markers
+    const m=s.match(/^(\d{1,3})\s*[:\.\)]?\s+(.*)$/);
+    let bn, rest;
+    if(m && parseInt(m[1],10)<80){bn=parseInt(m[1],10);rest=m[2];labelled=true;}
+    else {bn=seq;rest=s;}
+    // pull hex nibbles from the start of rest (block payload = first 8 nibbles)
+    const cleaned=rest.replace(/0x/gi,'').replace(/[\s:,\-]/g,'');
+    const hexpart=(cleaned.match(/^[0-9a-fA-F]+/)||[''])[0];
+    if(hexpart.length>=8 && bn<80){
+      blocks[bn]=Uint8Array.from(hexpart.slice(0,8).match(/../g).map(h=>parseInt(h,16)));
+      seq=bn+1;
+    } else if(/^(--|\?\?)/.test(rest) && bn<80){
+      blocks[bn]='fail'; seq=bn+1;
+    } else if(!labelled){ seq++; }
+  }
+  return {blocks, any:anyLine};
+}
+function classify(b, idx){
+  if(idx===79)return{z:'cnt',t:'counter'};
+  if(b==='fail')return{z:'unk',t:'gagal'};
+  if(!b)return{z:'free',t:'—'};
+  const allFF=b.every(x=>x===0xff), all00=b.every(x=>x===0x00);
+  if(allFF||all00)return{z:'free',t:allFF?'FF':'00'};
+  const printable=b.every(x=>x>=0x20&&x<=0x7e);
+  const distinct=new Set(b).size;
+  if(printable && distinct<=b.length)return{z:'cfg',t:'teks'};
+  // high-entropy / binary → signature candidate
+  return{z: distinct>=3?'sig':'cfg', t: distinct>=3?'biner':'data'};
+}
+let selCell=null, curBlocks=null;
+function renderMap(text){
+  const {blocks,any}=parseDump(text);
+  curBlocks=blocks;
+  const present=blocks.filter(b=>b&&b!=='fail'||b==='fail').length;
+  const dataCount=blocks.filter(b=>b&&b!=='fail').length;
+  if(!any){$('mapcard').hidden=true;$('dumpstat').textContent='Belum ada dump.';return;}
+  $('dumpstat').innerHTML='Terbaca <b>'+dataCount+'</b> blok berisi data.';
+  $('mapcard').hidden=false;
+  const g=$('grid');g.innerHTML='';
+  const cls={free:'z-free',cfg:'z-cfg',sig:'z-sig',cnt:'z-cnt',unk:'z-unk',tok:'z-tok'};
+  for(let i=0;i<80;i++){
+    const c=classify(blocks[i],i);
+    const el=document.createElement('div');
+    el.className='cell '+cls[c.z];
+    el.innerHTML='<span class="n">'+i+'</span><span class="t">'+c.t+'</span>';
+    el.onclick=()=>{document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');showDetail(i);};
+    g.appendChild(el);
+  }
+  suggestFree(blocks);
+  $('detail').innerHTML='Ketuk sebuah blok untuk melihat isinya.';
+}
+function showDetail(i){
+  const b=curBlocks[i], c=classify(b,i);
+  const zname={free:'Kosong',cfg:'Config/teks',sig:'Signature/biner',cnt:'Counter',unk:'Gagal baca'}[c.z];
+  let ascii='';
+  if(b&&b!=='fail')ascii=[...b].map(x=>(x>=0x20&&x<=0x7e)?String.fromCharCode(x):'·').join('');
+  const hex=(b&&b!=='fail')?sp(b):(b==='fail'?'-- -- -- --':'(kosong)');
+  $('detail').innerHTML='<b>Blok '+i+'</b> · '+zname+'<br>hex: <b>'+hex+'</b>'+(ascii?'  ascii: <b>'+ascii+'</b>':'')+(i===79?'<br>Counter 16-bit — jangan ditulis sebagai data.':'');
+}
+function suggestFree(blocks){
+  // free = empty (FF/00) or unread(null), not block 79, not locked config/sig
+  const isFree=i=>{if(i>=79)return false;const b=blocks[i];if(b==='fail')return false;if(!b)return true;return b.every(x=>x===0xff)||b.every(x=>x===0x00);};
+  function firstRun(n){let start=-1,len=0;for(let i=0;i<79;i++){if(isFree(i)){if(start<0)start=i;len++;if(len>=n)return start;}else{start=-1;len=0;}}return -1;}
+  const s4=firstRun(4), s8=firstRun(8);
+  const box=$('suggest');
+  if(s4<0){box.style.display='flex';box.innerHTML='<span>Tidak ada 4 blok kosong beruntun untuk token CMAC. Hapus dulu area yang tidak dipakai (aksi 9) atau pilih tag lain.</span>';return;}
+  box.style.display='flex';
+  let html='<span>Blok kosong beruntun untuk token: <b>CMAC → mulai blok '+s4+'</b> (blok '+s4+'–'+(s4+3)+')';
+  if(s8>=0)html+=', <b>HMAC → mulai blok '+s8+'</b>';
+  html+='.</span> <button class="btn primary" id="useblk">Pakai blok '+s4+' di kalkulator</button>';
+  box.innerHTML=html;
+  $('useblk').onclick=()=>{$('blk').value=s4;showTab('calc');compute();$('blk').scrollIntoView({behavior:'smooth',block:'center'});};
+}
+$('dump').addEventListener('input',()=>renderMap($('dump').value));
+$('clear').onclick=()=>{$('dump').value='';renderMap('');};
+
+/* reference example dumps (blok 10–21 from user's two tags; rest synthesized to match observed layout) */
+function buildExample(cfgWords){
+  // cfgWords: array of 12 two-byte hex strings for blocks 10..21
+  const lines=[];
+  for(let i=0;i<80;i++){
+    let v='FFFFFFFF';
+    if(i>=10&&i<=21){v=(cfgWords[i-10]+'0000').slice(0,8);} // 2-byte word + pad, as observed
+    else if(i>=32&&i<=51){ // high-entropy signature region (illustrative random)
+      v=[...Array(4)].map(()=>Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join('').toUpperCase();
+    } else if(i===79){v='00010000';}
+    else if(i>21&&i<32){v='00000000';}
+    lines.push(String(i).padStart(2,'0')+': '+v);
+  }
+  return lines.join('\n');
+}
+const Q=['0052','0000','0000','0040','0013','0001','0214','0000','0000','0002','0010','0000'];
+const M=['0052','0007','0001','0033','0013','0000','0000','0000','0000','0002','0010','0000'];
+$('load-q').onclick=()=>{$('dump').value=buildExample(Q);renderMap($('dump').value);};
+$('load-m').onclick=()=>{$('dump').value=buildExample(M);renderMap($('dump').value);};
+
+/* config comparison table */
+(function(){
+  const t=$('cmp');let head='<tr><th class="lab">Blok</th>';
+  for(let i=10;i<=21;i++)head+='<th>'+i+'</th>';head+='</tr>';
+  let rQ='<tr><td class="lab">Quantum</td>', rM='<tr><td class="lab">M.flex</td>';
+  for(let i=0;i<12;i++){const diff=Q[i]!==M[i];rQ+='<td class="'+(diff?'diff':'')+'">'+Q[i]+'</td>';rM+='<td class="'+(diff?'diff':'')+'">'+M[i]+'</td>';}
+  rQ+='</tr>';rM+='</tr>';
+  t.innerHTML=head+rQ+rM;
+})();
+
+/* ================= calculator ================= */
+let uidOrder='disp', algo='cmac';
+const USER_BLOCKS=79;
+function setErr(id,msg){const f=$(id),e=$(id+'-e');e.textContent=msg||'';f.classList.toggle('bad',!!msg);}
+function compute(){
+  let mk,uidRaw,prod,cnt,ok=true;
+  try{mk=parseHex($('mk').value);if(mk.length===0){setErr('mk','MASTER_KEY belum diisi');ok=false;}else setErr('mk','');}catch(e){setErr('mk',e);ok=false;}
+  $('mkinfo').textContent=(()=>{try{return parseHex($('mk').value).length+' byte';}catch{return '— byte';}})();
+  let uidSend=null;
+  try{uidRaw=parseHex($('uid').value);if(uidRaw.length!==8){setErr('uid','UID harus 8 byte (16 digit hex)');ok=false;}else{setErr('uid','');uidSend=uidOrder==='disp'?Uint8Array.from([...uidRaw].reverse()):uidRaw;}}catch(e){setErr('uid',e);ok=false;}
+  $('uidused').textContent=uidSend?sp(uidSend):'—';
+  try{prod=parseHex($('prod').value);if(prod.length===0)prod=new Uint8Array(2);if(prod.length!==2){setErr('prod','harus 2 byte');ok=false;}else setErr('prod','');}catch(e){setErr('prod',e);ok=false;}
+  try{cnt=parseHex($('cnt').value);if(cnt.length===0)cnt=new Uint8Array(4);if(cnt.length!==4){setErr('cnt','harus 4 byte');ok=false;}else setErr('cnt','');}catch(e){setErr('cnt',e);ok=false;}
+  const nBlk=algo==='cmac'?4:8;$('blkinfo').textContent=nBlk+' blok';
+  const blkTxt=$('blk').value.trim(),blk=/^\d+$/.test(blkTxt)?parseInt(blkTxt,10):NaN;let warn='';
+  if(isNaN(blk)){setErr('blk','isi nomor blok 0–78');ok=false;}
+  else if(blk<0||blk>=USER_BLOCKS||blk+nBlk-1>=USER_BLOCKS){setErr('blk','token butuh '+nBlk+' blok mulai '+blk+'; harus muat di 0–78');warn='Blok tidak muat: '+nBlk+' blok mulai '+blk+' melewati blok 78.';ok=false;}
+  else setErr('blk','');
+  $('warn').classList.toggle('show',!!warn);$('warn').textContent=warn;
+  if(!ok){$('result').hidden=true;return;}
+  const ktag=hmacSha256(mk,uidSend).slice(0,16);
+  const input=concat(concat(uidSend,prod),cnt);
+  const token=algo==='cmac'?aesCmac(ktag,input):hmacSha256(ktag,input);
+  $('ktag').textContent=sp(ktag);$('input').textContent=sp(input);$('token').textContent=sp(token);
+  $('tokbadge').textContent=(algo==='cmac'?'AES-CMAC':'HMAC-SHA256')+' · '+token.length+' byte';
+  $('flow').innerHTML='K_tag = HMAC-SHA256(MK, UID)[:16]<br>input = <b>UID</b> ‖ <b>kode</b> ‖ <b>counter</b><br>token = '+(algo==='cmac'?'AES-CMAC':'HMAC-SHA256')+'(K_tag, input)';
+  let rows='';for(let i=0;i<token.length/4;i++)rows+='<tr><td class="bn">Blok '+(blk+i)+'</td><td>'+sp(token.slice(i*4,i*4+4))+'</td></tr>';
+  $('blocks').innerHTML=rows;$('result').hidden=false;window._tok=token;
+}
+['mk','uid','prod','cnt','blk'].forEach(id=>$(id).addEventListener('input',compute));
+$('ord-disp').onclick=()=>{uidOrder='disp';$('ord-disp').setAttribute('aria-pressed','true');$('ord-send').setAttribute('aria-pressed','false');compute();};
+$('ord-send').onclick=()=>{uidOrder='send';$('ord-send').setAttribute('aria-pressed','true');$('ord-disp').setAttribute('aria-pressed','false');compute();};
+$('algo-cmac').onclick=()=>{algo='cmac';$('algo-cmac').setAttribute('aria-pressed','true');$('algo-hmac').setAttribute('aria-pressed','false');compute();};
+$('algo-hmac').onclick=()=>{algo='hmac';$('algo-hmac').setAttribute('aria-pressed','true');$('algo-cmac').setAttribute('aria-pressed','false');compute();};
+$('cp-sp').onclick=e=>copy(e.currentTarget,sp(window._tok));
+$('cp-raw').onclick=e=>copy(e.currentTarget,raw(window._tok));
+compute();
+</script>

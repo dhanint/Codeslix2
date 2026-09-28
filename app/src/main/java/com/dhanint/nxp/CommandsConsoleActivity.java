@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.nfc.NfcAdapter;
@@ -80,7 +81,8 @@ public class CommandsConsoleActivity extends Activity {
 
     @Override protected void onCreate(Bundle b){
         super.onCreate(b);
-        setContentView(buildRoot());
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setContentView(buildRoot(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         nfc=NfcAdapter.getDefaultAdapter(this);
         int flag=Build.VERSION.SDK_INT>=Build.VERSION_CODES.S?PendingIntent.FLAG_MUTABLE:0;
         pending=PendingIntent.getActivity(this,0,new Intent(this,getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),flag);
@@ -123,15 +125,15 @@ public class CommandsConsoleActivity extends Activity {
         panelHost=col();
         for(View p:panels){ p.setVisibility(View.GONE); panelHost.addView(wide(p)); }
         ScrollView psv=new ScrollView(this); psv.addView(panelHost);
-        root.addView(weight(psv,3));
+        root.addView(weight(psv,1));
 
-        // grid
+        // grid (tinggi tetap agar tak berebut ruang dengan panel)
         LinearLayout gwrap=col(); gwrap.setBackgroundColor(C_PANEL);
         gwrap.addView(gridHeader());
         gridTable=new TableLayout(this);
         ScrollView gsv=new ScrollView(this); gsv.addView(gridTable);
         gwrap.addView(weight(gsv,1));
-        root.addView(weight(gwrap,2));
+        root.addView(hgt(gwrap,220));
 
         // status
         tvStatus=tv("…"); tvStatus.setTypeface(Typeface.MONOSPACE); tvStatus.setTextColor(C_OK); pad(tvStatus,6);

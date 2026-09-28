@@ -1,0 +1,32 @@
+<!--
+  Snippet AndroidManifest.xml — gabungkan bagian ini ke manifest app Anda.
+  (Jangan menimpa manifest yang sudah ada; salin baris yang relevan.)
+-->
+
+<!-- 1) Di dalam <manifest>, sebelum <application>: -->
+<uses-permission android:name="android.permission.NFC" />
+<uses-feature android:name="android.hardware.nfc" android:required="false" />
+
+<!-- 2) Di dalam <application>, tambahkan activity ini: -->
+<activity
+    android:name=".CommandsConsoleActivity"
+    android:exported="true"
+    android:launchMode="singleTop"
+    android:label="SLIX2 Console">
+
+    <!-- Buka otomatis saat tag ISO 15693 (NfcV) di-tap -->
+    <intent-filter>
+        <action android:name="android.nfc.action.TECH_DISCOVERED" />
+    </intent-filter>
+    <meta-data
+        android:name="android.nfc.action.TECH_DISCOVERED"
+        android:resource="@xml/nfc_tech_filter" />
+
+    <!-- (opsional) jadikan layar pembuka: -->
+    <!--
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+    -->
+</activity>

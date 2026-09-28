@@ -71,7 +71,6 @@ public final class IsoConsole {
 
     public void connect() throws IOException {
         if (!nfcV.isConnected()) nfcV.connect();
-        nfcV.setTimeout(300);
         log.line("# Terhubung. UID = " + hex(uid) + " · maxLen=" + nfcV.getMaxTransceiveLength());
     }
 

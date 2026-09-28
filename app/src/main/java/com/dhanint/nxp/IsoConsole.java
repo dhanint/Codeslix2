@@ -136,6 +136,27 @@ public final class IsoConsole {
     /** DESTROY (IRREVERSIBLE): matikan label permanen (Destroy password, XOR). Addressed. */
     public boolean destroy(byte[] destroyPw4) throws IOException { return ok(send(C_DESTROY,true,true,xorPassword(destroyPw4))); }
 
+    // ---- varian "Xored eksplisit" (alur GET → hitung Xored → SET, seperti tool PC) ----
+    public byte[] getRandom() throws IOException { return getRandomNumber(); }
+    public static byte[] xorPw(byte[] pw4, byte[] rnd2){ byte[] m={rnd2[0],rnd2[1],rnd2[0],rnd2[1]}; byte[] x=new byte[4]; for(int i=0;i<4;i++) x[i]=(byte)(pw4[i]^m[i]); return x; }
+    public boolean setPasswordXored(byte pwId, byte[] xored4) throws IOException { return ok(send(C_SET_PASSWORD,true,true,cat(new byte[]{pwId},xored4))); }
+    public boolean enablePrivacyXored(byte[] xored4) throws IOException { return ok(send(C_ENABLE_PRIVACY,true,addressed,xored4)); }
+    public boolean destroyXored(byte[] xored4) throws IOException { return ok(send(C_DESTROY,true,true,xored4)); }
+    public boolean writeEasAfiPassword(byte[] pw4) throws IOException { return writePassword(PW_EAS_AFI, pw4); }
+    /** INVENTORY READ (standar). params = [AFI?] maskLen(1) [maskVal] firstBlock(1) numBlocks(1). */
+    public byte[] inventoryRead(int afi,int maskLen,byte[] maskVal,int firstBlock,int numBlocks,boolean fast) throws IOException {
+        byte cmd = fast ? C_FAST_INV_READ : C_INVENTORY_READ;
+        int maskBytes = (maskLen+7)/8;
+        byte[] mv = maskVal==null?new byte[0]:java.util.Arrays.copyOf(maskVal, maskBytes);
+        byte[] params;
+        if (afi!=0) params = cat(new byte[]{(byte)afi,(byte)maskLen}, cat(mv, new byte[]{(byte)firstBlock,(byte)numBlocks}));
+        else        params = cat(new byte[]{(byte)maskLen}, cat(mv, new byte[]{(byte)firstBlock,(byte)numBlocks}));
+        // inventory flags: Inventory bit set → gunakan flags khusus (0x06 high-datarate+inventory)
+        int f = 0x04 | 0x02; if (afi!=0) f |= 0x10; // Inventory + high datarate (+AFI)
+        byte[] head = { (byte)f, cmd, MFG_NXP };
+        return transceive(cat(head, params));
+    }
+
     private byte[] xorPassword(byte[] pw4) throws IOException {
         if (pw4.length!=4) throw new IllegalArgumentException("password = 4 byte");
         byte[] rnd = getRandomNumber();               // 2 byte

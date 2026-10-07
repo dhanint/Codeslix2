@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_navy">#FF111D3A</color>
+    <color name="brand_indigo">#FF1E3C8C</color>
+    <color name="brand_blue">#FF2B61D6</color>
+    <color name="brand_cyan">#FF38BDF8</color>
+    <color name="brand_gold">#FFF5C85C</color>
+</resources>

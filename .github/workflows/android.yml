@@ -14,9 +14,41 @@ jobs:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.7' }
+
+      # --- Debug build (selalu) ---
       - run: gradle assembleDebug --stacktrace --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      # --- Release bertanda tangan (hanya bila secret keystore tersedia) ---
+      # Set di repo: Settings > Secrets and variables > Actions
+      #   KEYSTORE_BASE64      = base64 dari slix2-release.jks  (base64 -w0 slix2-release.jks)
+      #   KEYSTORE_PASSWORD    = password store
+      #   KEY_ALIAS            = slix2
+      #   KEY_PASSWORD         = password key
+      - name: Decode keystore
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/slix2-release.jks"
+      - name: Build signed release
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          SLIX2_STORE_FILE: ${{ github.workspace }}/slix2-release.jks
+          SLIX2_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          SLIX2_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SLIX2_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: gradle assembleRelease --stacktrace --no-daemon
+      - name: Upload signed release
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error

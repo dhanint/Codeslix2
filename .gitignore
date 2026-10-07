@@ -5,3 +5,8 @@ build/
 /app/build/
 .DS_Store
 nxp-console.zip
+
+# Release signing secrets — NEVER commit
+*.jks
+*.keystore
+keystore.properties

@@ -1,4 +1,22 @@
 plugins { id 'com.android.application' }
+
+// --- Load release signing config (not committed) ---
+// Priority: app/keystore.properties -> root/keystore.properties -> environment variables.
+def keystorePropsFile = rootProject.file('keystore.properties')
+def localKeystorePropsFile = file('keystore.properties')
+def keystoreProps = new Properties()
+if (localKeystorePropsFile.exists())      { localKeystorePropsFile.withInputStream { keystoreProps.load(it) } }
+else if (keystorePropsFile.exists())      { keystorePropsFile.withInputStream { keystoreProps.load(it) } }
+
+def ksStorePath = keystoreProps['storeFile'] ?: System.getenv('SLIX2_STORE_FILE')
+def ksStorePw   = keystoreProps['storePassword'] ?: System.getenv('SLIX2_STORE_PASSWORD')
+def ksKeyAlias  = keystoreProps['keyAlias'] ?: System.getenv('SLIX2_KEY_ALIAS')
+def ksKeyPw     = keystoreProps['keyPassword'] ?: System.getenv('SLIX2_KEY_PASSWORD')
+// Resolve the keystore path against the repo root (absolute paths are kept as-is).
+def ksStoreFile = ksStorePath == null ? null :
+        (new File(ksStorePath).isAbsolute() ? new File(ksStorePath) : rootProject.file(ksStorePath))
+def hasSigning  = ksStoreFile != null && ksStoreFile.exists()
+
 android {
     namespace 'com.dhanint.nxp'
     compileSdk 34
@@ -9,6 +27,30 @@ android {
         versionCode 1
         versionName '1.0'
     }
+
+    signingConfigs {
+        release {
+            if (hasSigning) {
+                storeFile ksStoreFile
+                storePassword ksStorePw
+                keyAlias ksKeyAlias
+                keyPassword ksKeyPw
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Use the release keystore when configured; otherwise fall back so the
+            // project still builds (unsigned) without secrets present.
+            signingConfig hasSigning ? signingConfigs.release : null
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

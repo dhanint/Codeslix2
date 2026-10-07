@@ -529,8 +529,9 @@ public class CommandsConsoleActivity extends Activity {
         sp.setBackground(field()); sp.setPadding(dp(8),dp(6),dp(8),dp(6)); return sp; }
     private TextView cell(String s){ TextView t=new TextView(this); t.setText(s); t.setTextSize(12); t.setTextColor(C_TEXT); t.setTypeface(Typeface.MONOSPACE); t.setPadding(dp(8),dp(6),dp(8),dp(6)); return t; }
     private TextView hcell(String s){ TextView t=cell(s); t.setTypeface(Typeface.DEFAULT_BOLD); t.setTextColor(C_SEL); return t; }
-    private View space(int px){ View v=new View(this); v.setMinimumWidth(dp(px)); return v; }
-    private View space6(){ View v=new View(this); v.setMinimumHeight(dp(8)); return hgt(v,8); }
+    // Spacer harus berukuran eksplisit: View polos ber-WRAP_CONTENT akan mengambil seluruh ruang.
+    private View space(int w){ View v=new View(this); v.setLayoutParams(new LinearLayout.LayoutParams(dp(w), 1)); return v; }
+    private View space6(){ View v=new View(this); return hgt(v,8); }
 
     // ---- drawable factories ----
     private GradientDrawable solid(int color, int radius){ GradientDrawable g=new GradientDrawable(); g.setColor(color); g.setCornerRadius(radius); return g; }

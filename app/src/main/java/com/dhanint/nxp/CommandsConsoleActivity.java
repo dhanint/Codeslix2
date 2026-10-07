@@ -118,7 +118,7 @@ public class CommandsConsoleActivity extends Activity {
         // ---------- header (gradient card) ----------
         LinearLayout hdr=col();
         hdr.setBackground(gradient(new int[]{C_HEAD1,C_HEAD2}, dp(0)));
-        hdr.setPadding(dp(16),dp(14),dp(16),dp(14));
+        hdr.setPadding(dp(14),dp(10),dp(14),dp(6));
         LinearLayout titleRow=hrow();
         TextView dot=new TextView(this); dot.setText("◉"); dot.setTextColor(0xFF7FE7FF); dot.setTextSize(16);
         TextView title=new TextView(this); title.setText("SLIX2 Console"); title.setTextColor(0xFFFFFFFF);
@@ -133,18 +133,19 @@ public class CommandsConsoleActivity extends Activity {
         tvUid=new TextView(this); tvUid.setText("UID: —"); tvUid.setTypeface(Typeface.MONOSPACE);
         tvUid.setTextColor(0xFFFFFFFF); tvUid.setTextSize(12);
         tvUid.setBackground(solid(C_CHIP, dp(16))); tvUid.setPadding(dp(12),dp(7),dp(12),dp(7));
-        r1.addView(act); r1.addView(space(8)); r1.addView(tvUid, w1());
+        r1.addView(act); r1.addView(space(6)); r1.addView(tvUid, w1()); r1.addView(space(6));
+        r1.addView(hdrBtn("Read Tag", v->run("dump")));
         hdr.addView(r1);
-        hdr.addView(space6());
 
+        // opsi tampilan: bisa digeser horizontal di layar sempit
         LinearLayout r2=hrow();
         r2.addView(radioMode("HEX",0)); r2.addView(radioMode("ASCII",1)); r2.addView(radioMode("DEC",2));
         r2.addView(space(10));
         CheckBox cbA=hcb("Addressed", (bv,c)->addressed=c); r2.addView(cbA);
         CheckBox cbR=hcb("UID balik", (bv,c)->reverse=c); r2.addView(cbR);
-        r2.addView(space(8));
-        r2.addView(hdrBtn("Read Tag", v->run("dump")));
-        hdr.addView(r2);
+        HorizontalScrollView r2s=new HorizontalScrollView(this); r2s.setHorizontalScrollBarEnabled(false);
+        r2s.addView(r2);
+        hdr.addView(wide(r2s));
         root.addView(wide(hdr));
 
         // ---------- tab bar (pills) ----------
@@ -163,20 +164,21 @@ public class CommandsConsoleActivity extends Activity {
         panelHost=col(); panelHost.setPadding(dp(10),dp(10),dp(10),dp(10));
         for(View p:panels){ p.setVisibility(View.GONE); panelHost.addView(spacedCard(p)); }
         ScrollView psv=new ScrollView(this); psv.addView(panelHost); psv.setBackgroundColor(C_BG);
-        root.addView(weight(psv,1));
+        root.addView(weight(psv,3));
 
-        // ---------- memory grid (fixed height card) ----------
+        // ---------- memory grid (card, proporsional dgn panel) ----------
         LinearLayout gwrap=col(); gwrap.setBackground(card());
-        LinearLayout gtitle=hrow(); gtitle.setPadding(dp(12),dp(10),dp(12),dp(6));
+        LinearLayout gtitle=hrow(); gtitle.setPadding(dp(12),dp(8),dp(12),dp(4));
         TextView gt=new TextView(this); gt.setText("Memory Map"); gt.setTextColor(C_SEL);
         gt.setTypeface(Typeface.DEFAULT_BOLD); gt.setTextSize(13); gtitle.addView(gt);
         gwrap.addView(gtitle);
-        gwrap.addView(gridHeader());
-        gridTable=new TableLayout(this);
+        // header ikut di dalam TableLayout agar kolomnya sejajar dgn data
+        gridTable=new TableLayout(this); gridTable.setStretchAllColumns(true);
+        gridTable.addView(gridHeader());
         ScrollView gsv=new ScrollView(this); gsv.addView(gridTable);
         gwrap.addView(weight(gsv,1));
         LinearLayout gcard=col(); gcard.setPadding(dp(10),dp(0),dp(10),dp(8)); gcard.addView(weight(gwrap,1));
-        root.addView(hgt(gcard,230));
+        root.addView(weight(gcard,2));
 
         // ---------- status bar ----------
         tvStatus=new TextView(this); tvStatus.setText("…"); tvStatus.setTypeface(Typeface.MONOSPACE);
@@ -212,7 +214,7 @@ public class CommandsConsoleActivity extends Activity {
         final EditText raw=et("frame bebas: 02 20 48");
         LinearLayout rr=hrow(); rr.addView(raw,w1()); rr.addView(btn("Send", v->cmdThread(c->c.raw(raw.getText().toString())))); rr.addView(btn("Clear", v->tvLog.setText("")));
         p.addView(wide(rr));
-        LinearLayout q=flow();
+        ViewGroup q=flow();
         q.addView(btn("Read Tag", v->run("dump")));
         q.addView(btn("Sys Info", v->cmdThread(c->log("# "+c.decodeSystemInfo(c.getSystemInfo())))));
         q.addView(btn("NXP Sys", v->cmdThread(c->log("# "+c.decodeNxpSysInfo(c.getNxpSystemInfo())))));
@@ -257,7 +259,7 @@ public class CommandsConsoleActivity extends Activity {
     private View panelOperations(){
         LinearLayout p=panel();
         p.addView(btn("Get Multiple Block Security Status", v->cmdThread(c->log("# security = "+IsoConsole.hex(c.getSecurityStatus(0,totalBlocks))))));
-        LinearLayout qr=flow();
+        ViewGroup qr=flow();
         qr.addView(btn("Stay Quiet", v->cmdThread(c->c.stayQuietPersistent())));
         qr.addView(btn("Reset to ready", v->cmdThread(c->c.resetToReady())));
         qr.addView(btn("Select", v->cmdThread(c->c.select())));
@@ -285,7 +287,7 @@ public class CommandsConsoleActivity extends Activity {
     private View panelSlix(){
         LinearLayout p=panel();
         p.addView(section("EAS (Electronic Article Surveillance)"));
-        LinearLayout eb=flow();
+        ViewGroup eb=flow();
         eb.addView(btn("SET/Enable", v->cmdThread(c->log("# Set EAS: "+(c.setEas()?"OK":"gagal")))));
         eb.addView(btn("RESET/Disable", v->cmdThread(c->log("# Reset EAS: "+(c.resetEas()?"OK":"gagal")))));
         eb.addView(btn("ALARM", v->cmdThread(c->log("# EAS Alarm = "+IsoConsole.hex(c.easAlarm())))));
@@ -304,7 +306,7 @@ public class CommandsConsoleActivity extends Activity {
         p.addView(section("EAS/AFI Password"));
         LinearLayout pw=hrow(); slixEasPw=et("00000000"); slixEasPw.setText("00000000");
         pw.addView(lbl("Value:")); pw.addView(slixEasPw,w1()); p.addView(wide(pw));
-        LinearLayout pb=flow();
+        ViewGroup pb=flow();
         pb.addView(btn("WRITE", v->cmdThread(c->log("# Write EAS/AFI pw: "+(c.writeEasAfiPassword(IsoConsole.parseHex(slixEasPw.getText().toString()))?"OK":"gagal")))));
         pb.addView(btn("SET", v->cmdThread(c->log("# Set EAS/AFI pw: "+(c.setPassword(IsoConsole.PW_EAS_AFI, IsoConsole.parseHex(slixEasPw.getText().toString()))?"OK":"gagal")))));
         pb.addView(btn("PROTECT EAS", v->cmdThread(c->{ c.setOptionFlag(false); log("# Protect EAS: "+(c.passwordProtectEasAfi()?"OK":"gagal")); })));
@@ -339,7 +341,7 @@ public class CommandsConsoleActivity extends Activity {
         pp.addView(btn("Write", v->doProtectPage())); pp.addView(btn("Lock Protection", v->cmdThread(c->log("# Lock Page Prot: "+(c.lockPageProtection(parseInt(startPageH.getText().toString()))?"OK":"gagal"))))); p.addView(wide(pp));
         LinearLayout cl=hrow(); plRead=cb("PageL RdProt",null); plWrite=cb("WrProt",null); plWrite.setChecked(true); cl.addView(plRead); cl.addView(plWrite); p.addView(cl);
         LinearLayout ch=hrow(); phRead=cb("PageH RdProt",null); phWrite=cb("WrProt",null); phWrite.setChecked(true); ch.addView(phRead); ch.addView(phWrite); p.addView(ch);
-        LinearLayout act=flow();
+        ViewGroup act=flow();
         act.addView(btn("Enable Privacy", v->doXoredCmd("Enable Privacy", pwPriv, (c,x)->c.enablePrivacyXored(x))));
         act.addView(btn("Stay Quiet Persistant", v->cmdThread(c->{ c.stayQuietPersistent(); log("# Stay Quiet Persistent terkirim"); })));
         act.addView(btn("64 Bit Protection", v->cmdThread(c->log("# 64-bit PW Protection: "+(c.passwordProtect64()?"OK":"gagal")))));
@@ -348,10 +350,16 @@ public class CommandsConsoleActivity extends Activity {
         return p;
     }
     private LinearLayout pwRow(String name, EditText val, TextView xored, byte pwId){
-        LinearLayout r=hrow(); r.addView(lbl(name)); r.addView(val);
+        // label lebar tetap, field mengisi sisa (boleh menyusut), tombol tidak terjepit
+        LinearLayout r=hrow();
+        TextView l=lbl(name); r.addView(l, new LinearLayout.LayoutParams(dp(58), ViewGroup.LayoutParams.WRAP_CONTENT));
+        val.setMinWidth(0); val.setMinimumWidth(0); val.setTypeface(Typeface.MONOSPACE);
+        LinearLayout.LayoutParams vp=new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f); vp.setMargins(dp(3),dp(3),dp(3),dp(3));
+        r.addView(val, vp);
         r.addView(btn("SET", v->cmdThread(c->{ byte[] pw=IsoConsole.parseHex(val.getText().toString()); byte[] r2=lastRnd!=null?lastRnd:c.getRandomNumber(); lastRnd=r2; byte[] x=IsoConsole.xorPw(pw,r2); log("# Set "+name+" pw: "+(c.setPasswordXored(pwId,x)?"OK":"gagal")); })));
         r.addView(btn("WRITE", v->cmdThread(c->log("# Write "+name+" pw: "+(c.writePassword(pwId, IsoConsole.parseHex(val.getText().toString()))?"OK":"gagal")))));
         r.addView(btn("LOCK", v->cmdThread(c->log("# Lock "+name+" pw: "+(c.lockPassword(pwId)?"OK":"gagal")))));
+        for(int i=2;i<r.getChildCount();i++) r.getChildAt(i).setPadding(dp(10),dp(8),dp(10),dp(8));
         return r;
     }
     private void refreshXored(){
@@ -447,7 +455,7 @@ public class CommandsConsoleActivity extends Activity {
     }
 
     // ===================== grid =====================
-    private void renderGrid(){ gridTable.removeAllViews(); if(memory==null) return;
+    private void renderGrid(){ gridTable.removeAllViews(); gridTable.addView(gridHeader()); if(memory==null) return;
         for(int i=0;i<memory.length;i++){ final int blk=i; TableRow row=new TableRow(this);
             if(i%2==1) row.setBackgroundColor(C_ROW);
             TextView bn=cell(String.valueOf(i)); bn.setTypeface(Typeface.DEFAULT_BOLD);
@@ -482,7 +490,40 @@ public class CommandsConsoleActivity extends Activity {
     // ===================== view helpers =====================
     private LinearLayout col(){ LinearLayout l=new LinearLayout(this); l.setOrientation(LinearLayout.VERTICAL); return l; }
     private LinearLayout hrow(){ LinearLayout l=new LinearLayout(this); l.setOrientation(LinearLayout.HORIZONTAL); l.setGravity(Gravity.CENTER_VERTICAL); return l; }
-    private LinearLayout flow(){ return hrow(); }
+    private ViewGroup flow(){ return new FlowLayout(this); }
+
+    /** Layout sederhana yang membungkus anak ke baris berikutnya bila lebar tak cukup. */
+    static final class FlowLayout extends ViewGroup {
+        FlowLayout(android.content.Context c){ super(c); }
+        @Override protected void onMeasure(int wSpec, int hSpec){
+            int maxW=MeasureSpec.getSize(wSpec)-getPaddingLeft()-getPaddingRight();
+            boolean bounded=MeasureSpec.getMode(wSpec)!=MeasureSpec.UNSPECIFIED;
+            int x=0, y=0, rowH=0, usedW=0;
+            for(int i=0;i<getChildCount();i++){ View c=getChildAt(i); if(c.getVisibility()==GONE) continue;
+                measureChildWithMargins(c, wSpec, 0, hSpec, 0);
+                MarginLayoutParams lp=(MarginLayoutParams)c.getLayoutParams();
+                int cw=c.getMeasuredWidth()+lp.leftMargin+lp.rightMargin, ch=c.getMeasuredHeight()+lp.topMargin+lp.bottomMargin;
+                if(bounded && x>0 && x+cw>maxW){ y+=rowH; x=0; rowH=0; }
+                x+=cw; rowH=Math.max(rowH,ch); usedW=Math.max(usedW,x); }
+            int w=bounded?MeasureSpec.getSize(wSpec):usedW+getPaddingLeft()+getPaddingRight();
+            setMeasuredDimension(w, resolveSize(y+rowH+getPaddingTop()+getPaddingBottom(), hSpec));
+        }
+        @Override protected void onLayout(boolean changed,int l,int t,int r,int b){
+            int maxW=r-l-getPaddingLeft()-getPaddingRight(); int x=0, y=0, rowH=0;
+            for(int i=0;i<getChildCount();i++){ View c=getChildAt(i); if(c.getVisibility()==GONE) continue;
+                MarginLayoutParams lp=(MarginLayoutParams)c.getLayoutParams();
+                int cw=c.getMeasuredWidth()+lp.leftMargin+lp.rightMargin, ch=c.getMeasuredHeight()+lp.topMargin+lp.bottomMargin;
+                if(x>0 && x+cw>maxW){ y+=rowH; x=0; rowH=0; }
+                int cl=getPaddingLeft()+x+lp.leftMargin, ct=getPaddingTop()+y+lp.topMargin;
+                c.layout(cl, ct, cl+c.getMeasuredWidth(), ct+c.getMeasuredHeight());
+                x+=cw; rowH=Math.max(rowH,ch); }
+        }
+        @Override protected boolean checkLayoutParams(ViewGroup.LayoutParams p){ return p instanceof MarginLayoutParams; }
+        @Override protected LayoutParams generateDefaultLayoutParams(){ return new MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT); }
+        @Override public LayoutParams generateLayoutParams(android.util.AttributeSet a){ return new MarginLayoutParams(getContext(), a); }
+        @Override protected LayoutParams generateLayoutParams(ViewGroup.LayoutParams p){
+            return p instanceof MarginLayoutParams ? new MarginLayoutParams((MarginLayoutParams)p) : new MarginLayoutParams(p); }
+    }
     private LinearLayout panel(){ LinearLayout l=col(); l.setBackground(card()); l.setPadding(dp(14),dp(12),dp(14),dp(14)); return l; }
     private TextView tv(String s){ TextView t=new TextView(this); t.setText(s); t.setTextSize(13); t.setTextColor(C_TEXT); pad(t,3); return t; }
     private TextView lbl(String s){ TextView t=tv(s); t.setTextColor(C_MUTE); t.setTextSize(12); return t; }
@@ -506,17 +547,17 @@ public class CommandsConsoleActivity extends Activity {
         b.setBackground(ripple(bg, dp(10))); b.setPadding(dp(14),dp(8),dp(14),dp(8));
         b.setStateListAnimator(null); b.setElevation(0); b.setOnClickListener(l);
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(dp(3),dp(3),dp(3),dp(3)); b.setLayoutParams(lp); b.setMinHeight(dp(38)); b.setMinWidth(0); return b; }
+        lp.setMargins(dp(3),dp(3),dp(3),dp(3)); b.setLayoutParams(lp); b.setMinimumWidth(0); b.setMinimumHeight(0); b.setMinHeight(dp(38)); b.setMinWidth(0); return b; }
     private Button hdrBtn(String s, View.OnClickListener l){ Button b=styledBtn(s,l,0x33FFFFFF,0xFFFFFFFF); return b; }
     private Button tabBtn(String s, View.OnClickListener l){ Button b=new Button(this); b.setText(s); b.setAllCaps(false);
         b.setTextSize(12); b.setOnClickListener(l); b.setStateListAnimator(null); b.setElevation(0);
-        b.setPadding(dp(16),dp(8),dp(16),dp(8)); b.setMinWidth(0); b.setMinHeight(dp(36));
+        b.setPadding(dp(16),dp(8),dp(16),dp(8)); b.setMinimumWidth(0); b.setMinimumHeight(0); b.setMinWidth(0); b.setMinHeight(dp(36));
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         b.setLayoutParams(lp); return b; }
     private Button link(String s, View.OnClickListener l){ Button b=new Button(this); b.setText(s); b.setAllCaps(false);
         b.setTextSize(13); b.setTextColor(C_SEL); b.setTypeface(Typeface.DEFAULT_BOLD);
         b.setBackground(ripple(0x152B61D6, dp(8))); b.setPadding(dp(10),dp(4),dp(10),dp(4));
-        b.setStateListAnimator(null); b.setElevation(0); b.setMinWidth(dp(34)); b.setMinHeight(dp(32)); b.setOnClickListener(l); return b; }
+        b.setStateListAnimator(null); b.setElevation(0); b.setMinimumWidth(0); b.setMinimumHeight(0); b.setMinWidth(dp(34)); b.setMinHeight(dp(32)); b.setOnClickListener(l); return b; }
     private CheckBox cb(String s, CompoundButton.OnCheckedChangeListener l){ CheckBox c=new CheckBox(this); c.setText(s); c.setTextSize(12); c.setTextColor(C_TEXT); if(l!=null) c.setOnCheckedChangeListener(l); return c; }
     private CheckBox hcb(String s, CompoundButton.OnCheckedChangeListener l){ CheckBox c=cb(s,l); c.setTextColor(0xFFFFFFFF);
         if(Build.VERSION.SDK_INT>=21) c.setButtonTintList(ColorStateList.valueOf(0xFF9BD8FF)); return c; }
